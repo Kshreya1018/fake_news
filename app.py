@@ -1,8 +1,7 @@
 from flask import Flask, request, jsonify
 import pickle
 import re
-import nltk
-from nltk.corpus import stopwords
+from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
 
 with open("fake_model", "rb") as f:
     model_data = pickle.load(f)
@@ -10,7 +9,7 @@ with open("fake_model", "rb") as f:
 tfidf = model_data["tfidf"]
 model = model_data["model"]
 
-STOP = set(stopwords.words('english')) - {'no','nor','not'}
+STOP = set(ENGLISH_STOP_WORDS) - {'no','nor','not'}
 
 def clean_text(x):
     if not isinstance(x, str): 
