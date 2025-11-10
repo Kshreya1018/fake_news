@@ -52,10 +52,10 @@ app = Flask(__name__)
 def home():
     return jsonify({
         "message": "Welcome to the Fake News Detection API with Chatbot",
-        "bot_starter_message": "Hello! 👋 I can help verify news. Send any news text to /predict.",
+        "bot_starter_message": "Hi there! 🌼 Send me any news text and I’ll help check it",
         "endpoints": {
             "/predict": "POST → { 'text': 'your news text' }",
-            "/chatbot": "POST → { 'message': 'your question' }"
+            "/chatbot": "POST → { 'message': 'your message' }"
         }
     })
 
@@ -74,67 +74,74 @@ def predict():
 
     return jsonify({
         "prediction": result,
-        "confidence": f"{confidence}%"
+        "confidence": f"{confidence}%",
+        "message": "Thank you for checking 🌼 Feel free to send more anytime 💛"
     })
 
 def chatbot_response(message):
-    msg = message.lower()
+    msg = message.lower().strip()
 
-    if is_news_text(msg):
-        return "This looks like a news article 📄. Please send it to /predict so I can check if it's REAL or FAKE."
+    if msg in ["hi", "hello", "hey", "hii", "hola", "start"]:
+        return "Hiii! 🌼 Send me any news headline or message, and I’ll help you check if it’s Real ✅ or Fake ❌"
 
-    if msg in ["hi", "hello", "hey", "start", "hola"]:
-        return "Hello! 👋 I can help detect fake news. Send any article or message text to /predict, and I'll analyze it."
+    if "thank" in msg:
+        return "Aww, you're welcome! 🫶 I'm always here to help 💛"
 
-    if "true or fake" in msg or "real or fake" in msg or "is this news true" in msg:
-        return "Send the news text to /predict, and I will verify it ✅"
-
-    if "verify" in msg:
-        return "Sure! Paste the article or message and send it to /predict for verification."
-
-    if "instagram" in msg or "twitter" in msg or "social media" in msg:
-        return "News from social media can be misleading 🚫. Always verify using trusted sources or /predict."
+    if msg in ["who are you", "your name", "what are you"]:
+        return "I'm NewsBuddy 🌼 Your friendly helper for checking if news is real or fake"
 
     if "whatsapp" in msg or "forward" in msg:
-        return "Forwarded messages are often false ❗ Double-check using /predict."
+        return "Those WhatsApp forwards can be tricky 😕 You're doing great by verifying "
 
-    if "trustworthy" in msg or "reliable sources" in msg:
-        return "Reliable news sources include: Reuters, BBC, The Hindu, Associated Press, and official government sites."
+    if "instagram" in msg or "twitter" in msg or "social media" in msg:
+        return "Social media spreads news fast — not always accurately 😅 Always good to double-check"
 
     if "why fake news spreads" in msg or "why does fake news spread" in msg:
-        return "Fake news spreads quickly because it triggers emotions and gets shared without verification."
+        return "Fake news spreads because it triggers emotions and gets shared quickly 😞 But you're being smart by checking"
+
+    if "reliable sources" in msg or "trusted sources" in msg:
+        return "Reliable sources include: Reuters, BBC, The Hindu, Press Information Bureau, and other official websites 🌐"
+
+    if "true or fake" in msg or "real or fake" in msg or "is this news true" in msg:
+        return "Sure!! Just paste the news text here, and I’ll analyze it for you"
+
+    if "verify" in msg:
+        return "Of course! 😊 Paste the news text, I’ll check it"
 
     if "signs" in msg or "identify" in msg:
-        return "Signs of fake news: sensational headlines, no credible sources, poor grammar, and unknown websites."
+        return "Look for: missing sources, dramatic tone, grammar mistakes, unknown websites 👀 These can be signs of fake news"
 
     if "images" in msg or "videos" in msg:
-        return "Yes, images and videos can be faked. Use Google Lens or InVid to check authenticity 🔍."
+        return "Images & videos can be edited 😕 Try Google Lens or InVid to check authenticity 🔍"
 
     if "clickbait" in msg or "headline" in msg:
-        return "Clickbait headlines are made to trigger emotions, not inform. Always read the full article carefully."
+        return "Clickbait headlines try to shock you 😯 Always read the full article before believing"
 
     if "accuracy" in msg:
-        return "The model is trained on real datasets and performs reliably, but verification from multiple sources is best."
+        return "The model is trained well ✅ but cross-checking with trusted sources is always wise "
 
     if "emotional" in msg or "shocking" in msg:
-        return "Extreme emotional headlines are often misleading ⚠️. Be cautious."
+        return "Shocking headlines are often misleading ⚠️ You're right to pause and check "
 
     if "fact check" in msg or "fact-check" in msg:
-        return "Fact-checking means verifying news using credible sources before believing or sharing it."
+        return "Fact-checking means verifying news using credible sources before sharing "
 
     if "fact checking websites" in msg or "fact-check sites" in msg:
-        return "Try these fact-checkers: Alt News, BOOM Live, FactCheck.org, Reuters Fact Check ✅."
+        return "Try: Alt News, BOOM Live, FactCheck.org, Snopes, Reuters Fact Check ✅"
 
     if "summarize" in msg:
-        return "I currently verify fake news. If you'd like, I can help add summarization later 😊."
+        return "Right now I'm focused on verifying news But I can learn summarization too if you'd like "
 
     if "why believe fake news" in msg:
-        return "People believe fake news due to emotional influence, personal bias, and repetition."
+        return "People believe fake news because it appeals to emotions or biases 😞 That's why verifying is so important "
 
     if "how verify news organizations" in msg or "how journalists verify" in msg:
-        return "News organizations verify by cross-checking with multiple sources and official statements."
+        return "Journalists cross-check facts using multiple official & credible sources before publishing 📰"
 
-    return "I can help detect fake news 📰. Just send the text to /predict!"
+    if is_news_text(msg):
+        return "This sounds like news 📰💡 Please paste it here and I’ll carefully analyze it for you "
+
+    return "I’m here to help you verify news Just send any news text or headline and I’ll help you check if it’s Real ✅ or Fake ❌ "
 
 @app.route("/chatbot", methods=["POST"])
 def chatbot():
