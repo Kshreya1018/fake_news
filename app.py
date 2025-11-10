@@ -2,9 +2,14 @@ from flask import Flask, request, jsonify
 import pickle
 import re
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
+from sklearn.metrics.pairwise import cosine_similarity
 
 with open("fake_model", "rb") as f:
     model_data = pickle.load(f)
+
+with open("news_profile.pkl", "rb") as f:
+    news_profile = pickle.load(f)
+
 
 tfidf = model_data["tfidf"]
 model = model_data["model"]
@@ -21,30 +26,12 @@ def clean_text(x):
     return " ".join([w for w in x.split() if w not in STOP])
 
 def is_news_text(message):
-    text = message.lower().strip()
+    cleaned = clean_text(message)
+    vector = tfidf.transform([cleaned])
 
-    if len(text.split()) < 6:
-        return False
+    similarity = cosine_similarity(vector, news_profile)[0][0]
 
-    sentence_count = text.count('.') + text.count('!') + text.count('?')
-    if sentence_count > 1:
-        return True
-
-    news_keywords = [
-        "report", "reports", "said", "according to", "breaking", "headline", 
-        "official", "statement", "confirmed", "announced", "investigation",
-        "sources", "declared", "revealed"
-    ]
-    if any(word in text for word in news_keywords):
-        return True
-
-    if any(char.isdigit() for char in text):
-        return True
-
-    if text.count(',') > 1 or text.count('.') > 1:
-        return True
-
-    return False
+    return similarity > 0.15
 
 app = Flask(__name__)
 
@@ -52,7 +39,7 @@ app = Flask(__name__)
 def home():
     return jsonify({
         "message": "Welcome to the Fake News Detection API with Chatbot",
-        "bot_starter_message": "Hi there! 🌼 Send me any news text and I’ll help check it",
+        "bot_starter_message": "Hi there! Send me any news text and I’ll help check it 😊",
         "endpoints": {
             "/predict": "POST → { 'text': 'your news text' }",
             "/chatbot": "POST → { 'message': 'your message' }"
@@ -75,20 +62,20 @@ def predict():
     return jsonify({
         "prediction": result,
         "confidence": f"{confidence}%",
-        "message": "Thank you for checking 🌼 Feel free to send more anytime 💛"
+        "message": "Thank you for checking! Feel free to send more anytime 💛"
     })
 
 def chatbot_response(message):
     msg = message.lower().strip()
 
     if msg in ["hi", "hello", "hey", "hii", "hola", "start"]:
-        return "Hiii! 🌼 Send me any news headline or message, and I’ll help you check if it’s Real ✅ or Fake ❌"
+        return "Hiii! Send me any news headline or message, and I’ll help you check if it’s real or fake 😊"
 
     if "thank" in msg:
         return "Aww, you're welcome! 🫶 I'm always here to help 💛"
 
     if msg in ["who are you", "your name", "what are you"]:
-        return "I'm NewsBuddy 🌼 Your friendly helper for checking if news is real or fake"
+        return "I'm NewsBuddy! Your friendly helper for checking if news is real or fake 😊"
 
     if "whatsapp" in msg or "forward" in msg:
         return "Those WhatsApp forwards can be tricky 😕 You're doing great by verifying "
@@ -141,7 +128,7 @@ def chatbot_response(message):
     if is_news_text(msg):
         return "This sounds like news 📰💡 Please paste it here and I’ll carefully analyze it for you "
 
-    return "I’m here to help you verify news Just send any news text or headline and I’ll help you check if it’s Real ✅ or Fake ❌ "
+    return "I’m here to help you verify news Just send any news text or headline and I’ll help you check if it’s Real or Fake 😊 "
 
 @app.route("/chatbot", methods=["POST"])
 def chatbot():
