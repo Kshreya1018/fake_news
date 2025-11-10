@@ -25,17 +25,27 @@ def clean_text(x):
     x = re.sub(r'\s+', ' ', x).strip()
     return " ".join([w for w in x.split() if w not in STOP])
 
+import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
+
 def is_news_text(message):
     cleaned = clean_text(message)
     vector = tfidf.transform([cleaned])
 
-    profile_vector = news_profile
-    if hasattr(profile_vector, "toarray"):
-        profile_vector = profile_vector.toarray()
+    vector_dense = vector.toarray()
 
-    similarity = cosine_similarity(vector.toarray(), profile_vector)[0][0]
+    try:
+        profile_dense = news_profile.toarray()
+    except:
+        profile_dense = np.array(news_profile)
+
+    if profile_dense.ndim == 1:
+        profile_dense = profile_dense.reshape(1, -1)
+
+    similarity = cosine_similarity(vector_dense, profile_dense)[0][0]
 
     return similarity > 0.15
+
 
 
 app = Flask(__name__)
