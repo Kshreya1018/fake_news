@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import pickle
 import re
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
+import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
 with open("fake_model", "rb") as f:
@@ -29,11 +30,38 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
 def is_news_text(message):
-    cleaned = clean_text(message)
+    text = message.lower().strip()
+
+    chat_phrases = [
+        "can you",
+        "could you",
+        "will you",
+        "help me",
+        "please help",
+        "please check",
+        "tell me",
+        "explain",
+        "i think",
+        "i feel",
+        "do you know",
+        "what do you think"
+    ]
+    for phrase in chat_phrases:
+        if phrase in text:
+            return False
+
+    
+    chat_words = ["you", "me", "i", "we", "my", "your", "help", "check", "verify"]
+    if any(word in text.split() for word in chat_words):
+        return False
+
+    if len(text.split()) < 8:
+        return False
+
+    cleaned = clean_text(text)
     vector = tfidf.transform([cleaned])
 
     vector_dense = vector.toarray()
-
     try:
         profile_dense = news_profile.toarray()
     except:
@@ -44,9 +72,7 @@ def is_news_text(message):
 
     similarity = cosine_similarity(vector_dense, profile_dense)[0][0]
 
-    return similarity > 0.15
-
-
+    return similarity > 0.20
 
 app = Flask(__name__)
 
