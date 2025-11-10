@@ -29,9 +29,14 @@ def is_news_text(message):
     cleaned = clean_text(message)
     vector = tfidf.transform([cleaned])
 
-    similarity = cosine_similarity(vector, news_profile)[0][0]
+    profile_vector = news_profile
+    if hasattr(profile_vector, "toarray"):
+        profile_vector = profile_vector.toarray()
+
+    similarity = cosine_similarity(vector.toarray(), profile_vector)[0][0]
 
     return similarity > 0.15
+
 
 app = Flask(__name__)
 
