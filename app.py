@@ -51,7 +51,7 @@ def is_news_text(message):
             return False
 
     
-    chat_words = ["you", "me", "i", "we", "my", "your", "help", "check", "verify"]
+    chat_words = ["you", "me", "i", "my", "your", "help", "check", "verify"]
     if any(word in text.split() for word in chat_words):
         return False
 
