@@ -51,12 +51,7 @@ def is_news_text(message):
         if phrase in text:
             return False
 
-    
-    chat_words = ["you", "me", "i", "my", "your", "help", "check", "verify"]
-    if any(word in text.split() for word in chat_words):
-        return False
-
-    if len(text.split()) < 8:
+    if len(text.split()) < 5:
         return False
 
     cleaned = clean_text(text)
@@ -73,7 +68,7 @@ def is_news_text(message):
 
     similarity = cosine_similarity(vector_dense, profile_dense)[0][0]
 
-    return similarity > 0.20
+    return similarity > 0.30
 
 app = Flask(__name__)
 CORS(app)
