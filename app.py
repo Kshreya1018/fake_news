@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import pickle
 import re
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
@@ -75,6 +76,7 @@ def is_news_text(message):
     return similarity > 0.20
 
 app = Flask(__name__)
+CORS(app)
 
 @app.route("/", methods=["GET"])
 def home():
