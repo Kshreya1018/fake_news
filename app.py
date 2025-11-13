@@ -30,23 +30,20 @@ def home():
         "message": "Welcome to the Fake News Detection API with Chatbot",
         "bot_starter_message": "Hi there! Send me any news text and I’ll help check it 😊",
         "endpoints": {
-            "/predict": "POST → { 'text': 'your news text', 'is_news': true/false }",
+            "/predict": "POST → { 'message': 'your news text' }",
             "/chatbot": "POST → { 'message': 'your message' }"
         }
     })
 
-@app.route("/predict", methods=["POST"])
-def predict():
-    data = request.get_json()
-    text = data.get("text", "")
-    is_news = data.get("is_news", False)  
-    if not is_news:
-        return jsonify({
-            "type": "message",
-            "response": "Okay, noted your message 😊"
-        })
 
-    cleaned = clean_text(text)
+@app.route("/predict", methods=["POST"])
+def predict_news():
+    data = request.get_json()
+    news_text = data.get("message", "")
+    if not news_text.strip():
+        return jsonify({"reply": "Please provide some news text to analyze."})
+
+    cleaned = clean_text(news_text)
     vectorized = tfidf.transform([cleaned])
     pred = model.predict(vectorized)[0]
     prob = model.predict_proba(vectorized)[0].max()
@@ -55,14 +52,11 @@ def predict():
     confidence = round(prob * 100, 2)
 
     return jsonify({
-        "type": "news",
-        "prediction": result,
-        "confidence": f"{confidence}%",
-        "message": f"The news appears to be {result}. Confidence: {confidence}%"
+        "reply": f"The news appears to be {result}. Confidence: {confidence}%"
     })
 
 
-def chatbot_response(message):
+def get_chatbot_reply(message):
     msg = message.lower().strip()
 
     if msg in ["hi", "hello", "hey", "hii", "hola", "start"]:
@@ -105,7 +99,7 @@ def chatbot_response(message):
         return "The model is trained well ✅ but cross-checking with trusted sources is always wise."
 
     if "emotional" in msg or "shocking" in msg:
-        return "Shocking headlines are often misleading ⚠️ You're right to pause and check!"
+        return "Shocking headlines are often misleading ⚠ You're right to pause and check!"
 
     if "fact check" in msg or "fact-check" in msg:
         return "Fact-checking means verifying news using credible sources before sharing."
@@ -124,12 +118,14 @@ def chatbot_response(message):
 
     return "I’m here to help you verify news. Just send any news text or headline and I’ll help you check if it’s Real or Fake 😊"
 
+
 @app.route("/chatbot", methods=["POST"])
 def chatbot():
     data = request.get_json()
-    user_message = data.get("message", "")
-    reply = chatbot_response(user_message)
-    return jsonify({"response": reply})
+    user_input = data.get("message", "")
+    reply = get_chatbot_reply(user_input)
+    return jsonify({"reply": reply})
+
 
 if __name__ == "__main__":
     app.run(debug=True)
